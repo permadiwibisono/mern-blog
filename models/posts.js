@@ -7,8 +7,8 @@ var PostsSchema =  new Schema({
     body: { type:String, required:true },
     hidden: { type:Boolean, default:false },
     featured: { type:Boolean, default:false },
-    created_at: { type:Boolean, default: Date.now },
-    updated_at: { type:Boolean, default: Date.now }
+    created_at: { type:Date, default: Date.now },
+    updated_at: { type:Date, default: Date.now }
 })
 
 module.exports =  mongoose.model('Post',PostsSchema);
