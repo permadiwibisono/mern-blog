@@ -12,10 +12,10 @@ router.get('/',(req, res)=>{
 });
 
 router.post('/',(req,res)=>{
-  const { error } = validateRequest(req);
+  const { error, value } = validateRequest(req);
   if(error) return res.status(422).json(getValidationError(error));
 
-  const newPost = new Post(Object.assign({},req.body));
+  const newPost = new Post(Object.assign({}, value));
   newPost.save((err)=>{
     if(err) return res.status(500).send(err);
     return res.json({message:'Post created!', status_code:200});
@@ -30,9 +30,10 @@ router.get('/:id',(req,res)=>{
 })
 
 router.put('/:id',(req,res)=>{
+  const { error, value } = validateRequest(req);
   if(error) return res.status(422).json(getValidationError(error));
-
-  Post.findByIdAndUpdate(req.params.id,Object.assign({updated_at:Date.now()},req.body),{new:true},(err, post)=>{
+  const updatedPost = Object.assign({ updated_at: Date.now() }, value);
+  Post.findByIdAndUpdate(req.params.id, updatedPost, { new: true }, (err, post) => {
     if(err) return res.status(500).send(err);
     return res.json({message:'Post updated!', data: post, status_code:200});
   });
@@ -50,10 +51,10 @@ const validateRequest = ({ body }) => {
     body: Joi.string().required(),
     slug: Joi.string().required(),
     title: Joi.string().required(),
-    hidden: Joi.boolean(),
-    featured: Joi.boolean()
+    hidden: Joi.boolean().truthy(["1", true]).falsy(["0", false]),
+    featured: Joi.boolean().truthy(["1", true]).falsy(["0", false])
   };
-  return Joi.validate(body, schema);
+  return Joi.validate(body, schema, { abortEarly: false, allowUnknown: true });
 }
 
 const getValidationError = ({ details }) => ({
